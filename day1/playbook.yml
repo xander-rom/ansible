@@ -1,0 +1,205 @@
+- hosts: all
+  become: true
+  tasks:
+    # - name: Upgrade
+    #   yum:
+    #     name: '*'
+    #     state: latest
+    # - debug:
+    #     msg: "{{ ansible_enp0s8['ipv4']['address'] }}"
+
+
+    - name: Add Docker repo
+      yum_repository:
+        name: docker-ce
+        description: Docker-ce repo
+        baseurl:  https://download.docker.com/linux/centos/7/x86_64/edge
+        gpgcheck: no
+
+    - name: Install Docker and other packages
+      yum:
+        name:
+          - deltarpm
+          - epel-release
+          - ntp
+          - net-tools
+          - jq
+          - bind-utils
+          - moreutils
+          - wget
+          - containerd.io
+          - docker-ce-cli
+          - docker-ce
+        state: present
+        update_cache: true
+
+    - name: Start Docker&ntpd
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Remove swapfile from /etc/fstab
+      mount:
+        name: swap
+        fstype: swap
+        state: absent
+    
+
+    - name: Disable swap
+      command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: Disable selinux
+      selinux:
+        state: disabled
+      
+    - name: Add k8s repo
+      copy:
+        src: kubernetes.repo
+        dest: /etc/yum.repos.d/K8s.repo
+        mode: 0644
+
+    - name: Install Kubernetes
+      yum:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        disable_excludes: kubernetes
+
+    - name: Enable kubelet
+      systemd:
+        name: kubelet
+        enabled: true
+
+    - name: Modify kubelet config
+      lineinfile:
+        path: /etc/sysconfig/kubelet
+        insertafter: 'KUBELET_EXTRA_ARGS='
+        line: "--node-ip={{ ansible_enp0s8['ipv4']['address'] }}"
+        state: present
+
+    - name: "modprobe br_netfilter"
+      shell: |
+        modprobe br_netfilter
+        sysctl -p
+      changed_when: no
+    
+    - name: update kernel settings
+      become: yes
+      sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: 1
+        sysctl_set: yes
+        state: present
+        reload: yes
+   
+    - name: update kernel settings
+      become: yes
+      sysctl:
+        name: net.bridge.bridge-nf-call-ip6tables
+        value: 1
+        sysctl_set: yes
+        state: present
+        reload: yes
+
+    - name: Creating directory for k8s config
+      file:
+        path: /home/devops/.kube
+        state: directory
+        owner: devops
+        group: devops
+
+- hosts: masters
+  become: true
+  tasks:    
+    - name: reload kubeadm
+      shell: kubeadm reset --force
+
+    - name: kubeadm init to join var
+      shell: >
+        kubeadm init \ 
+        --pod-network-cidr 10.244.0.0/16 \
+        --apiserver-advertise-address {{ ansible_enp0s8['ipv4']['address'] }}
+        
+    - name: Copy admin.conf
+      copy:
+        src: /etc/kubernetes/admin.conf
+        remote_src: yes
+        dest: /home/devops/.kube/config
+        owner: devops
+        group: devops
+    
+    - name: Fetch admin.conf
+      fetch:
+        src: /home/devops/.kube/config
+        dest: ./config
+        flat: yes
+
+    - name: Get the name of interface
+      shell: |
+        ip r | grep $(hostname -I | sed 's/10.0.2.15//' | awk '{print $1}') | cut -d' ' -f3
+      register: eth_int
+    
+    - debug:
+        msg: "{{ eth_int.stdout}}"
+
+    - name: install flannel
+      shell: |
+        kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+        kubectl patch daemonsets kube-flannel-ds-amd64 -n kube-system --patch='{"spec":{"template":{"spec":{"containers":[{"name": "kube-flannel", "args": ["--ip-masq", "--kube-subnet-mgr", "--iface= {{eth_int.stdout}}"]}]}}}}'
+      become: true
+      become_user: devops
+    
+    - name: Generate join command
+      shell: kubeadm token create --print-join-command
+      register: join_command
+   
+    - name: Copy join command to local file
+      copy:
+        content: "{{ join_command.stdout_lines[0] }}" 
+        dest: "/home/devops/join-command"
+
+    - name: Copy join-command to Ansible Controller
+      fetch:
+        src: /home/devops/join-command
+        dest: ./join-command
+        flat: yes
+
+- hosts: workers
+  become: true
+  tasks:
+    - name: copy config to worker
+      copy:
+        src: ./config
+        dest: /home/devops/.kube/config
+        owner: devops
+        group: devops
+
+    - name: Copy join-command to worker-node
+      copy:
+        src: ./join-command
+        dest: /home/devops/join.sh
+        owner: devops
+        group: devops
+        mode: 0755
+
+    - name: Deleting config files of kubelet
+      find:
+        paths: /etc/kubernetes/
+      register: files_to_delete
+
+    - name: remove file glob
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ files_to_delete.files }}"
+
+    - name: Add worker-node to cluster
+      shell: /home/devops/join.sh
+    
+    - name: Change the label of worker node
+      shell: kubectl label node worker node-role.kubernetes.io/worker=worker
+      become: true
+      become_user: devops

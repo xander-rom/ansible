@@ -1,0 +1,30 @@
+- hosts: all  ####role base
+  become: true
+  tasks:
+    - name: add group "devops"
+      group: name=devops
+
+
+    - name: add user "devops"
+      user:
+        name: devops
+        group: devops
+        home: /home/devops
+        createhome: yes
+        password: "{{ 'jenkins' | password_hash('sha512') }}"
+        state: present
+        update_password: on_create
+      
+      
+    - name: Copying ssh keys
+      authorized_key:
+        user: devops
+        state: present
+        key: "{{ lookup('file', 'devops.pem') }}"
+
+    - name: add devops to sudoers
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        line: 'devops ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
