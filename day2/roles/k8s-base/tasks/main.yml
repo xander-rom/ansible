@@ -1,0 +1,20 @@
+- name: Add k8s repo
+  copy:
+    src: kubernetes.repo
+    dest: /etc/yum.repos.d/K8s.repo
+    mode: 0644
+
+- name: Install Kubernetes
+  yum:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    disable_excludes: kubernetes
+  notify: tune_kube
+
+- name: kube version
+  shell: kubelet --version
+  register: kubev
+  changed_when: false
+  

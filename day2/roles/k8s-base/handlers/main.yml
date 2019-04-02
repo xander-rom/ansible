@@ -1,0 +1,23 @@
+- name: Enable_kube
+  systemd:
+    name: kubelet
+    enabled: true
+  listen: tune_kube
+
+- name: Modify kubelet config
+  lineinfile:
+    path: /etc/sysconfig/kubelet
+    insertafter: 'KUBELET_EXTRA_ARGS='
+    line: "--node-ip={{ ip_addr }}"
+    state: present
+  listen: tune_kube
+
+- name: kube_facts
+  copy: 
+    content: |
+      [version]
+      info={{ kubev.stdout }}
+    dest: "/etc/ansible/facts.d/kube.fact"
+    owner: vagrant
+  become: yes
+  listen: tune_kube

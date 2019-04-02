@@ -1,0 +1,66 @@
+- name: Install utils
+  yum:
+    name:
+      - deltarpm
+      - epel-release
+      - ntp
+      - net-tools
+      - jq
+      - bind-utils
+      - moreutils
+      - wget
+    state: present
+    update_cache: true
+  #notify: ntpd_start
+
+
+    # - name: Upgrade
+    #   yum:
+    #     name: '*'
+    #     state: latest
+    
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+    
+
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Disable selinux
+  selinux:
+    state: disabled
+  
+- name: "modprobe br_netfilter"
+  shell: |
+    modprobe br_netfilter
+    sysctl -p
+  changed_when: no
+
+- name: update kernel settings
+  become: yes
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+   
+- name: update kernel settings
+  become: yes
+  sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: "check facts.d directory"
+  become: yes
+  file:
+      path: '/etc/ansible/facts.d'
+      state: directory
+      mode: 0755

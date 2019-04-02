@@ -1,0 +1,39 @@
+- name: add group "devops"
+  group: name=devops
+
+- name: add user "devops"
+  user:
+    name: devops
+    group: devops
+    home: /home/devops
+    createhome: yes
+    password: "{{ 'jenkins' | password_hash('sha512') }}"
+    state: present
+    update_password: on_create
+      
+- name: Copying ssh keys
+  authorized_key:
+    user: devops
+    state: present
+    key: "{{ lookup('file', 'devops.pem') }}"
+
+- name: add devops to sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    line: 'devops ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Creating directory for k8s config
+  file:
+    path: /home/devops/.kube
+    state: directory
+    owner: devops
+    group: devops
+
+
+- name: user data
+  shell: id devops
+  register: user_id
+  notify: user_facts
+  changed_when: false

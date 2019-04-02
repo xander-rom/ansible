@@ -1,0 +1,6 @@
+- name: ntpd_start
+  systemd:
+    name: ntpd
+    state: started
+    enable: true
+  become: yes

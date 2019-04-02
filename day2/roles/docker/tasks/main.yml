@@ -1,0 +1,22 @@
+- name: Add Docker repo
+  yum_repository:
+    name: docker-ce
+    description: Docker-ce repo
+    baseurl:  https://download.docker.com/linux/centos/7/x86_64/edge
+    gpgcheck: no
+
+- name: Install Docker and other packages
+  yum:
+    name:
+      - containerd.io
+      - docker-ce-cli
+      - docker-ce
+    state: present
+    update_cache: true
+  notify: start_docker
+
+- name: collect facts
+  shell: docker --version | cut -f1 -d ','
+  register: dockerv
+  notify: docker_facts
+  changed_when: true

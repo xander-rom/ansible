@@ -1,0 +1,33 @@
+- name: check cluster
+  stat:
+    path: "{{ check }}"
+  register: ch_cluster
+
+- name: kubeadm init 
+  shell: |
+    kubeadm init \ 
+    --pod-network-cidr 10.244.0.0/16 \
+    --apiserver-advertise-address {{ ansible_enp0s8['ipv4']['address'] }}
+  notify: files
+  when: ch_cluster.stat.exists == false
+
+- name: force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: Get the name of interface
+  shell: 
+    ip r | grep $(hostname -I | sed 's/10.0.2.15//' | awk '{print $1}') | cut -d' ' -f3
+  register: eth_int
+  changed_when: false
+    
+- debug:
+    msg: "{{ eth_int.stdout}}"
+
+- name: install flannel
+  shell: |
+    kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+    kubectl patch daemonsets kube-flannel-ds-amd64 -n kube-system --patch='{"spec":{"template":{"spec":{"containers":[{"name": "kube-flannel", "args": ["--ip-masq", "--kube-subnet-mgr", "--iface= {{eth_int.stdout}}"]}]}}}}'
+  become: true
+  become_user: devops
+  when: ch_cluster.stat.exists == false
+    

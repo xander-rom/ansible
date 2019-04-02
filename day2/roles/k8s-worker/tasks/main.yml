@@ -1,0 +1,31 @@
+- name: check the cluster
+  stat:
+    path: "{{ check }}"
+  register: ch_cluster
+
+- name: copy config to worker
+  copy:
+    src: ./config
+    dest: /home/devops/.kube/config
+    owner: devops
+    group: devops
+  when: ch_cluster.stat.exists == false
+
+- name: Copy join-command to worker-node
+  copy:
+    src: ./join-command
+    dest: /home/devops/join.sh
+    owner: devops
+    group: devops
+    mode: 0755
+  when: ch_cluster.stat.exists == false
+
+- name: Add worker-node to cluster
+  shell: /home/devops/join.sh
+  when: ch_cluster.stat.exists == false
+    
+- name: Change the label of worker node
+  shell: kubectl label node worker-node node-role.kubernetes.io/worker-node=worker
+  become: true
+  become_user: devops
+  when: ch_cluster.stat.exists == false

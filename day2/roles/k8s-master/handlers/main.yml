@@ -1,0 +1,33 @@
+- name: Copy admin.conf
+  copy:
+    src: /etc/kubernetes/admin.conf
+    remote_src: yes
+    dest: /home/devops/.kube/config
+    owner: devops
+    group: devops
+  listen: files
+    
+- name: Fetch admin.conf
+  fetch:
+    src: /home/devops/.kube/config
+    dest: ./config
+    flat: yes
+  listen: files
+
+- name: Generate join command
+  shell: kubeadm token create --print-join-command
+  register: join_command
+  listen: files
+   
+- name: Copy join command to local file
+  copy:
+    content: "{{ join_command.stdout_lines[0] }}" 
+    dest: "/home/devops/join-command"
+  listen: files
+
+- name: Copy join-command to Ansible Controller
+  fetch:
+    src: /home/devops/join-command
+    dest: ./join-command
+    flat: yes
+  listen: files

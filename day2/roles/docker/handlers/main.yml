@@ -1,0 +1,14 @@
+- name: start_docker
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: docker_facts
+  copy: 
+    content: |
+      [version]
+      info={{ dockerv.stdout }}
+    dest: "/etc/ansible/facts.d/docker.fact"
+    owner: vagrant
+  become: yes

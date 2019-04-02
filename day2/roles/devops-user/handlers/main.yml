@@ -1,0 +1,8 @@
+- name: user_facts
+  copy: 
+    content: |
+     [ID]
+     info={{ user_id.stdout }}
+    dest: "/etc/ansible/facts.d/user.fact"
+    owner: vagrant
+  become: yes

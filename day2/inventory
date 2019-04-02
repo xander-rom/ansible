@@ -1,0 +1,16 @@
+
+[master-node]
+master ansible_host=192.168.56.20
+
+[worker-node]
+worker ansible_host=192.168.56.21
+
+[masters:children]
+master-node
+
+[workers:children]
+worker-node
+[all:vars]
+ansible_connection=ssh
+ansible_user=vagrant
+ansible_ssh_pass=vagrant

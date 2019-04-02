@@ -1,0 +1,28 @@
+- hosts: all
+  become: yes
+
+  pre_tasks:
+    - debug: 
+        msg: "Start of provisioning"
+                
+  roles:
+    - common
+    - devops-user
+    - docker
+    - k8s-base
+
+
+- hosts: masters
+  become: yes
+  roles:
+    - k8s-master
+
+
+- hosts: workers
+  become: yes
+  roles:
+    - k8s-worker
+
+  post_tasks:
+    - debug: 
+        msg: "End of provisioning"
