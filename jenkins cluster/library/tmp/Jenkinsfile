@@ -1,0 +1,97 @@
+def al_log = "http://jenkins-ci.playpit.by/job/EPBYMINW6122/job/mntlab-ci-pipeline/${BUILD_NUMBER}/console"
+def nex_repo = "http://nexus-ci.playpit.by/repository/MNT-pipeline-training/"
+def app_serv = "http://application.playpit.by/"
+def watcher = ''
+def branch = "aramanovich"
+def giturl = "https://github.com/MNT-Lab/p191e-module.git"
+try{
+  node {
+    stage('checkout'){
+		git branch: "${branch}", url: "${giturl}"
+ 	}
+ 	stage('build'){
+        watcher = 'build'
+ 		withMaven(maven: 'M3') {
+    	sh "mvn clean package -f helloworld-ws/pom.xml"
+    	}
+ 	}
+    stage('sonar'){
+        watcher = 'sonar'
+    	def scannerHome = tool 'SonarQubeScanner';
+    	 withSonarQubeEnv {
+            sh """ ${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=aramanovich \
+                                                -Dsonar.java.binaries=helloworld-ws/src/main/java \
+                                                -Dsonar.sources=helloworld-ws """ 
+        }
+    }
+    // stage('testing'){
+    //    watcher = 'testing'
+    //     parallel 'pre-integration-test': {
+      //          watcher += 'pre-integration-test'
+    //         withMaven(maven: 'M3') {
+    //             sh "mvn pre-integration-test -f helloworld-ws/pom.xml" 
+    //         }
+    //     }, 'integration-test': {
+    //            watcher += 'integration-test'
+    //         withMaven(maven: 'M3') {
+    //             sh "mvn integration-test -f helloworld-ws/pom.xml"
+    //         }
+    //     }, 'post-integration-test': {
+    //            watcher += 'post-integration-test'
+    //         withMaven(maven: 'M3') {
+    //             sh "mvn post-integration-test -f helloworld-ws/pom.xml"
+    //         }
+    //     }
+    // }
+    stage('Triggering job and fetching artefact after finishing') {
+        watcher = 'Triggering job and fetching artefact after finishing'
+        build job: "MNTLAB-${branch}-child1-build-job", parameters: [[$class: 'StringParameterValue', name: 'BRANCH_NAME', value: "${branch}"]], wait: true
+        copyArtifacts projectName: "MNTLAB-${branch}-child1-build-job"
+    }
+    stage ('Packaging and Publishing results'){
+        watcher = 'Packaging and Publishing results'
+        sh """ if  [ -d temp ]
+            then
+               tar -xf ${branch}_dsl_script.tar.gz -C temp/
+            else
+                mkdir temp; tar -xf ${branch}_dsl_script.tar.gz -C temp/
+            fi"""
+        sh "tar -czf pipeline-${branch}-${BUILD_NUMBER}.tar.gz temp/output.txt Jenkinsfile helloworld-ws/target/helloworld-ws.war"
+        archiveArtifacts artifacts: "pipeline-${branch}-${BUILD_NUMBER}.tar.gz", onlyIfSuccessful: true
+        nexusArtifactUploader nexusVersion: 'nexus3', protocol: 'http', nexusUrl: 'nexus-ci.playpit.by', groupId: "${branch}",
+        version: "${BUILD_NUMBER}", repository: 'MNT-pipeline-training', credentialsId: 'nexus', artifacts: 
+        [[artifactId: "pipeline-${branch}" , classifier: '', file: "pipeline-${branch}-${BUILD_NUMBER}.tar.gz", type: 'tar.gz']]
+     }
+    stage('Asking for manual approval'){
+        watcher = 'Asking for manual approval'
+
+        input message: 'Deploy artifact to Tomcat?', ok: "yes"
+    }
+}
+    node("Host-Node"){
+    stage('Deployment'){
+        watcher = 'Deployment'
+        
+            git branch: "${branch}", url: "${giturl}"
+            ansiblePlaybook( 
+                playbook: 'playbook.yml',
+                inventory: 'inventory',
+                installation: 'ansible-on-host',
+                credentialsId: 'deploy',
+                disableHostKeyChecking: true,
+                limit: 'all',
+                colorized: true,
+                extraVars: [branch:"${branch}", build:"${BUILD_NUMBER}", nex_repo:"${nex_repo}", app_serv:"${app_serv}"])
+        }    
+        
+    }
+}
+catch(e){
+    def when = new Date()
+    mail subject: "Job execution failed", body: """
+                                        ${JOB_NAME} failed at ${watcher} stage at ${when}.
+                                        Follow ${al_log} to see the details. """,
+        from: "jenkins.mntlab@bk.ru", to: "aramanovi4@ya.ru"
+}
+
+
