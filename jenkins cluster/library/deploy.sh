@@ -1,6 +1,6 @@
- #! /bin/bash
+#! /bin/bash
  
- -f "$1" ] && source $1
+ [ -f "$1" ] && source $1
 # tom_url="http://application.playpit.by/"
 # tom_user=deployer
 # tom_pass=s3cret
@@ -37,6 +37,7 @@ function rollback {
 		if [[ $(cat roll) == *OK* ]]
 			then res="Rollback is successful. Actual page is $tomcat_url$dep_path. Actual build is $stable"
 			else res="Rollback failed"
+		fi
 	else res="Not enough parameters - failed"
 	fi
 }

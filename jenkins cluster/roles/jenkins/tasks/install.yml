@@ -3,6 +3,6 @@
     url: http://mirrors.jenkins.io/war-stable/latest/jenkins.war
     dest: /opt/jenkins/
     owner: "{{jen_user}}"
-    group: jenkins
+    group: "{{jen_group}}"
     remote_src: yes
   become: yes

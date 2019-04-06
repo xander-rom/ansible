@@ -1,3 +1,8 @@
 jen_user: jenkins
 jen_pass:
 jen_group: "{{jen_user}}"
+jen_xms: 512
+jen_xmx: 768
+jen_home: /opt/jenkins
+repo_user: jenkins
+repo_pass: jenkins

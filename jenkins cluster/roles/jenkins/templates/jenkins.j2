@@ -5,7 +5,7 @@ Requires=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/java	-Duser.home=/opt/jenkins \
+ExecStart=/usr/bin/java	-Duser.home={{jen_home}} \
 			-Djenkins.install.runSetupWizard=false \
 			-Djava.awt.headless=true \
 			-Dhudson.plugins.git.GitSCM.verbose=true \
@@ -18,11 +18,11 @@ ExecStart=/usr/bin/java	-Duser.home=/opt/jenkins \
 			-XX:+CMSClassUnloadingEnabled \
 			-XX:+UseConcMarkSweepGC \
 			-XX:+DisableExplicitGC \
-			-Xms512m \
-			-Xmx768m \
+			-Xms{{jen_xms}}m \
+			-Xmx{{jen_xmx}}m \
 			-jar /opt/jenkins/jenkins.war
-User=jenkins
-Group=jenkins
+User={{jen_user}}
+Group={{jen_group}}
 
 [Install]
 WantedBy=multi-user.target

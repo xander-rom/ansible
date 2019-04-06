@@ -25,11 +25,11 @@
   
 - name: Configuration of postgre
   shell: |
-    psql  -c "create user sonar"
+    psql  -c "create user {{sonar_user}}"
     psql  -c "alter role sonar with createdb"
     psql  -c "alter user sonar with encrypted password 'sonar'"
-    psql  -c "create database sonar owner sonar"
-    psql  -c "grant all privileges on database sonar to sonar"
+    psql  -c "create database {{sonar_user}} owner {{sonar_user}}"
+    psql  -c "grant all privileges on database {{sonar_user}} to {{sonar_user}}"
   become: yes
   become_user: postgres
   

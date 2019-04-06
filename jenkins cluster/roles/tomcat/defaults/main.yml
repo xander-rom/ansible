@@ -4,4 +4,5 @@ jen_group: "{{jen_user}}"
 tomcat_user: tomcat
 tomcat_pass:
 tomcat_group: "{{tomcat_user}}"
+tomcat_home: /opt/tomcat
 tomcat: 8.5.39

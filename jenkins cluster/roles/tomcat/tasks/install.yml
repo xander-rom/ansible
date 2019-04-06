@@ -38,7 +38,7 @@
 - name: create link
   file:
     src: "{{tmp.stdout}}"
-    dest: /opt/tomcat
+    dest: "{{tomcat_home}}"
     owner: "{{tomcat_user}}"
     group: "{{tomcat_group}}"
     state: link

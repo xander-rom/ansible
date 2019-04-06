@@ -1,15 +1,15 @@
 - name: Create artifact folder
   file:
-    path: /opt/jenkins/artifacts
+    path: "{{jen_home}}/artifacts"
     state: directory
-    owner: jenkins
-    group: jenkins
+    owner: "{{jen_user}}"
+    group: "{{jen_group}}"
   become: yes
 
 - name: Deploy jenkins.service
-  copy:
-    src: jenkins.service
-    dest: /etc/systemd/system/
+  template:
+    src: jenkins.j2
+    dest: /etc/systemd/system/jenkins.service
   become: yes
   notify: start jenkins
 
@@ -17,12 +17,12 @@
   file:
     path: /home/jenkins/.m2
     state: directory
-    owner: jenkins
+    owner: "{{jen_user}}"
   become: yes
 
 - name: Copy settings for maven (nexus connectivity)
-  copy:
-    src: settings.xml
-    dest: /home/jenkins/.m2/
-    owner: jenkins
+  template:
+    src: settings.j2
+    dest: /home/jenkins/.m2/settings.xml
+    owner: "{{jen_user}}"
   become: yes

@@ -1,0 +1,5 @@
+- name: deploy
+  deploy: act="{{act}}" tom_user="{{tom_user}}" tom_pass="{{tom_pass}}" dep_path="{{dep_path}}" build="{{build}}" tom_url="{{tom_url}}"
+  register: temp
+
+- debug: msg="{{temp}}"

@@ -4,5 +4,6 @@ jen_group: "{{jen_user}}"
 sonar_user: sonar
 sonar_group: "{{sonar_user}}"
 sonar_pass:
+sonar_home: /opt/sonar
 sonar: 6.7.6
 scanner: 3.3.0.1492
