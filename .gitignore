@@ -1,4 +1,6 @@
 .git
 */.vagrant
+.vagrant
 */data
+data
 
