@@ -6,20 +6,19 @@
 deploy {
 	curl -IL $tomcat_url$dep_path > cur_page
 	dep_res=$(curl -T 'tmp/helloworld-ws/target/helloworld-ws.war'\
-  		"http://$tom_user:$tom_pass@$tomcat_url/manager/text/deploy?path=/$path&tag=$build&update=true")
-	
+  				"http://$tom_user:$tom_pass@$tomcat_url/manager/text/deploy?path=/$path&tag=$build&update=true")
 	if [[ "$dep_res" == *FAIL* ]]
 		then res="Deploy failed with message: $dep_res"
-		else 
-			curl -IL $tomcat_url$dep_path > new_page
-			dif=$(diff -q cur_page new_page)
-			if [[ "$dif" == *differ* ]] && [[$(cat new_page) != *404* ]]
-				then res="Deploy is succesful. Actual page is $tomcat_url$dep_path. Actual build is $build"
-			    else 
-			    	res="Deploy failed or you deployed the same app"
-			fi
-	fi
-
+	elif [[ "$dep_res" == *OK* ]] && [[ $(cat cur_page) == *404* ]]
+		then res="Deploy is succesful. Actual page is $tomcat_url$dep_path. Actual build is $build"
+	else
+		curl -IL $tomcat_url$dep_path | grep Last-Modified > cur_page
+		curl -IL $tomcat_url$dep_path | grep Last-Modified > new_page
+		if [[ $(cat cur_time) == $(cat new_page)]]
+			then res="Deploy failed or you deployed the same app"
+			else res="Deploy is succesful. Actual page is $tomcat_url$dep_path. Actual build is $build"
+		fi
+	fi  
 }
 
 
