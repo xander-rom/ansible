@@ -1,0 +1,25 @@
+- name: st_jenkins
+  systemd:
+    daemon-reload: yes
+    name: jenkins
+    enabled: yes
+    state: started
+  become: yes
+  listen: start jenkins
+
+- name: Get jenkins version
+  shell: curl localhost:8080/about -LI | grep X-Jenkins:| cut -d' ' -f2
+  register: jen_version
+  until: jen_version.stdout != ''
+  retries: 5
+  delay: 30
+  listen: start jenkins
+
+- name: save jenkins facts
+  copy: 
+    content: >
+      {
+        "jenkins": "{{ jen_version.stdout }}",
+      }
+    dest: "/etc/ansible/facts.d/jenkins.fact"
+  listen: start jenkins

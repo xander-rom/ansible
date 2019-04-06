@@ -1,0 +1,23 @@
+- name: Check Jenkins.war
+  stat:
+    path: /opt/jenkins/jenkins.war
+  register: check 
+
+- debug:
+    msg: "{{check.stat.exists}}"
+
+- name: get jenkins
+  import_tasks: install.yml
+  when: check.stat.exists == false
+
+- name: Check jenkins service file
+  stat:
+    path: /etc/systemd/system/jenkins.service
+  register: check 
+
+- debug:
+    msg: "{{check.stat.exists}}"
+
+- name: Config jenkins
+  import_tasks: config.yml
+  when: check.stat.exists == false

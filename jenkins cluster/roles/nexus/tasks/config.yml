@@ -1,0 +1,30 @@
+- debug: msg="{{tmp.stdout}}"
+
+- name: create link
+  file:
+    src: "/opt/{{tmp.stdout}}"
+    dest: /opt/nexus
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    state: link
+  become: yes
+  
+- name: Change workfolders owner
+  file:
+    path: "{{item}}"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    recurse: yes
+  with_items:
+    - "/opt/{{tmp.stdout}}"
+    - /opt/sonatype-work  
+  become: yes
+
+- name: Deploy service file
+  copy:
+    src: nexus.service
+    dest: /etc/systemd/system/
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+  become: yes
+  notify: nex_start

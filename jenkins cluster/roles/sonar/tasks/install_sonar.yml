@@ -1,0 +1,27 @@
+- name: Download sonar archive
+  get_url:
+    url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{sonar}}.zip
+    dest: /opt
+    owner: "{{sonar_user}}"
+    group: "{{sonar_group}}"
+  register: tmp
+  become: yes
+
+- name: Unpack sonar
+  unarchive:
+    src: "{{tmp.dest}}"
+    dest: /opt
+    owner: "{{sonar_user}}"
+    group: "{{sonar_group}}"
+    remote_src: yes
+  become: yes
+
+- name: Download and unzip sonar-scanner
+  unarchive:
+    src: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-{{scanner}}-linux.zip
+    dest: /opt
+    owner: "{{sonar_user}}"
+    group: "{{sonar_group}}"
+    remote_src: yes
+  become: yes
+

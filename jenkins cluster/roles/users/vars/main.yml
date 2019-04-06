@@ -1,0 +1,35 @@
+users:
+  devops:
+    gid: 1001
+    uid: 1001
+    create_home: true
+    home: /home/devops
+    in_sudoers: "devops ALL=(ALL) NOPASSWD: ALL"
+
+  jenkins:
+    gid: 1111
+    uid: 1111
+    create_home: true
+    home: /opt/jenkins
+    in_sudoers: ""
+
+  sonar:
+    gid: 1010
+    uid: 1010
+    create_home: false
+    home: ""
+    in_sudoers: ""
+
+  nexus:
+    gid: 1011
+    uid: 1011
+    create_home: false
+    home: ""
+    in_sudoers: ""
+
+  tomcat:
+    gid: 1110
+    uid: 1110
+    create_home: false
+    home: ""
+    in_sudoers: ""

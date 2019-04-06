@@ -1,0 +1,27 @@
+- name: Installing packages
+  package:
+    name:
+      - java-{{java}}-openjdk
+      - net-tools
+      - git
+      - unzip
+      - zip
+  become: yes
+
+- name: maven - download&unpack
+  unarchive:
+    src: http://ftp.byfly.by/pub/apache.org/maven/maven-3/{{maven}}/binaries/apache-maven-{{maven}}-bin.tar.gz
+    dest: /opt/
+    owner: jenkins
+    group: jenkins
+    remote_src: yes
+  become: yes
+
+- name: gradle - unpack
+  unarchive:
+    src: https://services.gradle.org/distributions/gradle-{{gradle}}-bin.zip
+    dest: /opt/
+    owner: jenkins
+    group: jenkins
+    remote_src: yes
+  become: yes

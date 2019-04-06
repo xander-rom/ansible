@@ -1,0 +1,42 @@
+- name: Install PostgreSQL
+  yum:
+    name:
+      - postgresql-server
+      - postgresql-contrib
+    state: present
+  become: yes
+
+- name: initialization of db
+  shell: "postgresql-setup initdb"
+  become: yes
+  
+- name: start postgre
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Copying pg_hba
+  copy:
+    src: pg_hba.conf
+    dest: /var/lib/pgsql/data/
+  become: yes
+  
+- name: Configuration of postgre
+  shell: |
+    psql  -c "create user sonar"
+    psql  -c "alter role sonar with createdb"
+    psql  -c "alter user sonar with encrypted password 'sonar'"
+    psql  -c "create database sonar owner sonar"
+    psql  -c "grant all privileges on database sonar to sonar"
+  become: yes
+  become_user: postgres
+  
+- name: restart postgre
+  systemd:
+    name: postgresql
+    state: restarted
+    enabled: yes
+  become: yes
+  notify: db_facts

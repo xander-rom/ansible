@@ -1,0 +1,32 @@
+- name: start sonar
+  systemd:
+    name: sonar
+    state: started
+    enabled: yes
+  become: yes
+  listen: start sonar
+   
+- name: get sonar facts
+  shell: curl "localhost:9000/api/server/version"
+  register: sonar_version
+  until: sonar_version.stdout != ''
+  retries: 5
+  delay: 20
+  listen: start sonar
+
+- name: get db facts
+  shell: psql --version | grep psql | cut -d' ' -f3 
+  register: db_version
+  become: yes
+  become_user: postgres
+  listen: db_facts
+
+- name: save facts
+  copy: 
+    content: >
+      {
+        "sonarqube": "{{sonar_version.stdout}}",
+        "postgresql": "{{db_version.stdout}}"
+      }
+    dest: "/etc/ansible/facts.d/sonar.fact"
+  listen: start sonar

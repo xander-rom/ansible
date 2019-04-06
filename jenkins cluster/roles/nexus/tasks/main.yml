@@ -1,0 +1,18 @@
+- name: Check nexus archive
+  stat:
+    path: /opt/nexus-{{nexus}}-unix.tar.gz
+  register: check
+
+- name: Install nexus
+  import_tasks: install.yml
+  when: check.stat.exists == False
+
+- name: Check nexus workfolder
+  stat:
+    path: /opt/nexus
+  register: check
+
+- name: Config nexus
+  import_tasks: config.yml
+  when: check.stat.exists == False
+

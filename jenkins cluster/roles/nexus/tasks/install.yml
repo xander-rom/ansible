@@ -1,0 +1,20 @@
+- name: download nexus
+  get_url:
+    url: http://download.sonatype.com/nexus/3/nexus-{{nexus}}-unix.tar.gz
+    dest: /opt
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+  register: tmp
+  become: yes
+
+- name: Decompress nexus
+  unarchive:
+    src: "{{tmp.dest}}"
+    dest: /opt
+    remote_src: yes
+  become: yes
+
+- name: Get the folder name
+  shell: echo "{{ tmp.dest }}" | cut -d'/' -f3 | cut -d'-' -f1-3
+  register: tmp
+

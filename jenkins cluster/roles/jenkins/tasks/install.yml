@@ -1,0 +1,8 @@
+- name: Download Jenkins war
+  get_url:
+    url: http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+    dest: /opt/jenkins/
+    owner: "{{jen_user}}"
+    group: jenkins
+    remote_src: yes
+  become: yes

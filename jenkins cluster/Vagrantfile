@@ -1,0 +1,36 @@
+
+Vagrant.configure("2") do |config|
+  
+  config.vm.box = "sbeliakou/centos"
+  config.vm.define "jen" do |test|
+	test.vm.hostname="jenkins-nginx"
+	test.vm.network :private_network, ip: "192.168.56.200"
+	test.vm.synced_folder "data/", "/opt/jenkins", create: true, mount_options: ["uid=1111", "gid=1111"]
+	test.vm.provider "virtualbox" do |vb|
+		vb.memory=1024
+	end
+end
+config.vm.define "tomcat" do |tom|
+	tom.vm.hostname="app-serv"
+	tom.vm.network :private_network, ip: "192.168.56.222"
+	tom.vm.provider "virtualbox" do |vb|
+		vb.memory=1024
+	end
+end
+  (1..2).each do |i|
+	config.vm.define "jensl-#{i}" do |jen|
+	    jen.vm.hostname="jen-slave-#{i}"
+	    jen.vm.network :private_network, ip: "192.168.56.20#{i}"
+	    jen.vm.provider "virtualbox" do |vb|
+		vb.memory=1024
+	end
+	if i==2 then jen.vm.provision :ansible do |ansible|
+		ansible.playbook = "jen.yaml"
+		ansible.inventory_path = "./inventory"
+		ansible.limit="all"
+	end
+end
+	end
+  end
+
+end

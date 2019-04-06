@@ -1,0 +1,24 @@
+- name: nex_start
+  systemd:
+    name: nexus
+    enabled: yes
+    state: started
+  become: yes
+  listen: nex_start
+
+- name: get the nexus version
+  shell: curl localhost:8081 -IL | grep Server | cut -d' ' -f2 | cut -d'/' -f2
+  register: nexus_version
+  until: nexus_version.stdout != ''
+  retries: 5
+  delay: 60
+  listen: nex_start
+
+- name: register facts
+  copy: 
+    content: >
+      {
+        "nexus": "{{ nexus_version.stdout }}"
+      }
+    dest: "/etc/ansible/facts.d/nexus.fact"
+  listen: nex_start

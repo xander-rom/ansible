@@ -1,0 +1,23 @@
+- name: Install packages
+  import_tasks: install.yml
+  when: ansible_local['packages'] is not defined
+  notify: save_facts
+
+- name: Configure builders
+  import_tasks: config.yml
+  
+- name: get java version
+  shell: java -version 2>&1 | grep version | awk '{print $3}' | sed 's/[^0-9._]//g'
+  register: java_version
+  notify: save_facts
+
+- name: get maven version
+  shell: mvn -v | awk 'FNR==1' |cut -d' ' -f3
+  register: mvn_version
+
+- name: get gradle version
+  shell: gradle -v | grep Gradle | cut -d' ' -f2
+  register: gr_version
+
+- name: force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers

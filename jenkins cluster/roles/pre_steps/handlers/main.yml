@@ -1,0 +1,56 @@
+- name: export maven
+  blockinfile:
+    path: /etc/profile.d/maven.sh
+    block: |
+      export M2_HOME=/opt/maven
+      export MAVEN_HOME=/opt/maven
+      export PATH=${M2_HOME}/bin:${PATH}
+    create: yes
+    mode: 0755
+    state: present
+  become: yes
+  listen: maven
+
+- name: maven load
+  shell: source /etc/profile.d/maven.sh
+  become: yes
+  listen: maven
+
+- name: gradle_script
+  blockinfile:
+    path: /etc/profile.d/gradle.sh
+    block: |
+      export GRADLE_HOME=/opt/gradle
+      export PATH=${GRADLE_HOME}/bin:${PATH}
+    create: yes
+    mode: 0755
+    state: present
+  become: yes
+  listen: gradle
+
+- name: gradle_load
+  shell: source /etc/profile.d/gradle.sh
+  become: yes
+  listen: gradle
+
+- name: check facts.d
+  file:
+    path: "/etc/ansible/facts.d/"
+    state: directory
+    owner: vagrant
+    group: vagrant
+  become: yes
+  listen: save_facts
+  
+- name: save_facts
+  copy: 
+    content: >
+      {
+        "java": "{{ java_version.stdout }}",
+        "maven": "{{mvn_version.stdout}}",
+        "gradle": "{{gr_version.stdout}}"
+      }
+    dest: "/etc/ansible/facts.d/packages.fact"
+    owner: vagrant
+    group: vagrant
+  listen: save_facts

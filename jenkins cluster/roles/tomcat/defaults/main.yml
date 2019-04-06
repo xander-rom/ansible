@@ -1,0 +1,7 @@
+jen_user: jenkins
+jen_pass: 
+jen_group: "{{jen_user}}"  
+tomcat_user: tomcat
+tomcat_pass:
+tomcat_group: "{{tomcat_user}}"
+tomcat: 8.5.39

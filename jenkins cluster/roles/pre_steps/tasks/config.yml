@@ -1,0 +1,19 @@
+- name: maven - create symlink
+  file:
+    src: /opt/apache-maven-{{maven}}
+    path: /opt/maven
+    state: link
+    owner: jenkins
+    group: jenkins
+  notify: maven
+  become: yes
+
+- name: gradle - create symlink
+  file:
+    src: /opt/gradle-{{gradle}}
+    path: /opt/gradle
+    state: link
+    owner: jenkins
+    group: jenkins
+  notify: gradle
+  become: yes

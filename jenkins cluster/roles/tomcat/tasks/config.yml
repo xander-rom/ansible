@@ -1,0 +1,39 @@
+- name: Deploy tomcat service
+  copy:
+    src: tomcat.service
+    dest: /etc/systemd/system/
+  become: yes
+  
+- name: copy context.xml
+  copy:
+    src: context.xml
+    dest: /opt/tomcat/webapps/manager/META-INF/context.xml
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+  become: yes
+
+- name: create Catalina dir
+  file:
+    path: /opt/tomcat/conf/Catalina/localhost
+    state: directory
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+  become: yes
+  
+- name: tune1
+  copy:
+    src: manager.xml
+    dest: /opt/tomcat/conf/Catalina/localhost
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+  become: yes
+  
+
+- name: tune2
+  copy:
+    src: tomcat-users.xml
+    dest: /opt/tomcat/conf/
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+  become: yes
+  notify: tom_tune

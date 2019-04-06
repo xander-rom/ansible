@@ -1,0 +1,35 @@
+- name: Create group {{u_group}}
+  group:
+    name: "{{u_group}}"
+    gid: "{{users[user].gid}}"
+    state: present
+  become: yes
+
+- name: Create user {{user}}
+  user:
+    name: "{{user}}"
+    password: "{{user_pass}}"
+    uid: "{{users[user].uid}}"
+    group: "{{u_group}}"
+    state: present
+    update_password: on_create
+  become: yes
+  
+- name: Create {{user}} folder
+  file:
+    path: "{{users[user].home}}"
+    state: directory
+    owner: "{{user}}"
+    group: "{{u_group}}"
+  become: yes
+  when: users[user].create_home == True
+
+- name: Add in sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    line: "{{ user }} ALL=(ALL) NOPASSWD: ALL"
+    validate: 'visudo -cf %s'
+  become: yes
+  when: users[user].in_sudoers  != ''
+

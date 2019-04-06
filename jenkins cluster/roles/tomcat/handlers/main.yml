@@ -1,0 +1,24 @@
+- name: tom_serv
+  systemd:
+    name: tomcat
+    state: started
+    enabled: yes
+  become: yes
+  listen: tom_tune
+
+- name: get facts
+  shell: curl localhost:8080 | grep title | cut -d'<' -f2 | cut -d'/' -f2
+  register: tom_version
+  until: tom_version.stdout != ''
+  retries: 5
+  delay: 20
+  listen: tom_serv
+
+- name: save facts
+  copy: 
+    content: >
+      {
+        "tomcat": "{{tom_version.stdout }}",
+      }
+    dest: "/etc/ansible/facts.d/tomcat.fact"
+  listen: tom_serv

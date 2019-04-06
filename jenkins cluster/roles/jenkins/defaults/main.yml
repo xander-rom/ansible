@@ -1,0 +1,3 @@
+jen_user: jenkins
+jen_pass:
+jen_group: "{{jen_user}}"

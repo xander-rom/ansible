@@ -1,0 +1,15 @@
+- name: get nginx facts
+  shell: |
+    nginx -v 2>&1 | awk -F/ '{print $2}'
+  register: nginx_version
+  become: yes
+  listen: ng_facts
+
+- name: save facts
+  copy: 
+    content: >
+      {
+        "nginx": "{{ nginx_version.stdout }}"
+      }
+    dest: "/etc/ansible/facts.d/nginx.fact"
+  listen: ng_facts

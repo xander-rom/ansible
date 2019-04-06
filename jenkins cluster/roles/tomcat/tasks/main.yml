@@ -1,0 +1,8 @@
+- name: install tomcat
+  import_tasks: install.yml
+  when: ansible_local['tomcat'] is not defined
+
+- name: config tomcat
+  import_tasks: config.yml
+  when: ansible_local['tomcat'] is not defined
+

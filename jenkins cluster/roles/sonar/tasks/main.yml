@@ -1,0 +1,12 @@
+- name: Install db
+  import_tasks: install_db.yml
+  when: ansible_local['sonar'] is not defined
+
+- name: Install sonar
+  import_tasks: install_sonar.yml
+  when: ansible_local['sonar'] is not defined
+
+- name: Config sonar
+  import_tasks: config_sonar.yml
+  when: ansible_local['sonar'] is not defined
+  

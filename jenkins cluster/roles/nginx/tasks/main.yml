@@ -1,0 +1,36 @@
+- name: Add Nginx Repository
+  yum_repository:
+    name: Nginx
+    description: Nginx Centos Repo
+    baseurl: http://nginx.org/packages/centos/$releasever/$basearch/
+    gpgcheck: no
+    enabled: yes
+  become: yes
+
+- name: Ensure Nginx Installed
+  yum: name=nginx
+  become: yes
+  
+- name: Deploy custom config
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+  become: yes
+
+# - name: Modify /etc/hosts
+#   lineinfile:
+#     path: /etc/hosts
+#     line: '192.168.56.200 jenkins'
+#     create: yes
+#   become: yes
+
+- name: Ensure Nginx Service Running and Enabled
+  service: name=nginx state=started enabled=yes
+  become: yes
+  notify: ng_facts
+
+
+
+
+
+# tasks file for nginx

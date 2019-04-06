@@ -1,0 +1,29 @@
+- name: get src loc
+  shell: echo "{{tmp.dest}}" | cut -d'.' -f1-3
+  register: tmp
+
+- name: Create sonar link
+  file:
+    src: "{{tmp.stdout}}"
+    dest: /opt/sonar
+    owner: "{{sonar_user}}"
+    group: "{{sonar_group}}"
+    state: link
+  become: yes
+
+- name: Copy custom sonar props
+  copy:
+    src: sonar.properties
+    dest: /opt/sonar/conf
+    owner: "{{sonar_user}}"
+    group: "{{sonar_group}}"
+  become: yes
+
+- name: Sonar service
+  copy:
+    src: sonar.service
+    dest: /etc/systemd/system
+  become: yes
+  notify: "start sonar"
+
+  

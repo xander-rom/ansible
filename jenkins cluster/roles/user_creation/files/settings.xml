@@ -1,0 +1,23 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      https://maven.apache.org/xsd/settings-1.0.0.xsd">
+ 
+  <servers>
+    <server>
+      <id>Nexus-3</id>
+      <username>jenkins</username>
+      <password>jenkins</password>
+      <configuration></configuration>
+    </server>
+  </servers>
+  <mirrors>
+    <mirror>
+      <id>Local</id>
+      <name>LocalMirror</name>
+      <url>http://192.168.56.202:8081/repository/maven-central/</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+ 
+</settings>

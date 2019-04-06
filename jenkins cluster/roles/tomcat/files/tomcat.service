@@ -1,0 +1,24 @@
+[Unit]
+Description=Tomcat Application server
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+User=tomcat
+Group=tomcat
+
+Environment="CATALINA_HOME=/opt/tomcat"
+Environment="JAVA_OPTS=-Xms256m -Xmx512m -verbose:gc \
+                  -Xloggc:/opt/tomcat/logs/gclog\
+		          -Xss756k \
+                  -XX:+HeapDumpOnOutOfMemoryError \
+                  -XX:HeapDumpPath=/opt/tomcat/logs/"
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+
+
+[Install]
+WantedBy=multi-user.target
+
