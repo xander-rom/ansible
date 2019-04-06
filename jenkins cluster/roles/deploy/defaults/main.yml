@@ -1,7 +1,7 @@
 act: deploy
 tom_user: tomcat
-tom_pass: s3cret
+tom_pass: tomcat
 dep_path: aramanovich
-tom_url: http://application.playpit.by
-build: 50
+tom_url: localhost:8080/
+build: 56
 stable: 50

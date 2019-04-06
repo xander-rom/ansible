@@ -1,14 +1,14 @@
-- hosts: master
-  roles:
-    - jenkins
+# - hosts: master
+#   roles:
+#     - jenkins
 
-- hosts: sonar
-  roles:
-    - sonar
+# - hosts: sonar
+#   roles:
+#     - sonar
 
-- hosts: nexus
-  roles:
-    - nexus
+# - hosts: nexus
+#   roles:
+#     - nexus
 
 - hosts: tomcat
   roles:
