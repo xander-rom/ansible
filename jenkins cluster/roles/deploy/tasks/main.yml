@@ -1,9 +1,12 @@
 - name: deploy
-  deploy: act="{{act}}" tom_user="{{tom_user}}" tom_pass="{{tom_pass}}" dep_path="{{dep_path}}" build="{{build}}" tom_url="{{tom_url}}"
-  register: dep
-  become: yes
-  when: act == "deploy"
-  notify: deploy_facts
+  block:
+    - deploy: act="{{act}}" tom_user="{{tom_user}}" tom_pass="{{tom_pass}}" dep_path="{{dep_path}}" build="{{build}}" tom_url="{{tom_url}}"
+      register: dep
+      become: yes
+      when: act == "deploy"
+      notify: deploy_facts
+  rescue:
+    - deploy: act=rollback tom_user="{{tom_user}}" tom_pass="{{tom_pass}}" dep_path="{{dep_path}}" tom_url="{{tom_url}}" stable="{{ansible_local['deploy']['stable_build']}}"
 
 - name: rollback
   deploy: act="{{act}}" tom_user="{{tom_user}}" tom_pass="{{tom_pass}}" dep_path="{{dep_path}}" tom_url="{{tom_url}}" stable="{{stable}}"
