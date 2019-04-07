@@ -5,6 +5,9 @@
 
 - name: Configure builders
   import_tasks: config.yml
+  notify:
+    - maven
+    - gradle
   
 - name: get java version
   shell: java -version 2>&1 | grep version | awk '{print $3}' | sed 's/[^0-9._]//g'
@@ -18,6 +21,8 @@
 - name: get gradle version
   shell: gradle -v | grep Gradle | cut -d' ' -f2
   register: gr_version
+
+- debug: msg="{{gr_version}}"
 
 - name: force all notified handlers to run at this point, not waiting for normal sync points
   meta: flush_handlers

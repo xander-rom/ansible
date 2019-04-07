@@ -1,6 +1,14 @@
 - name: deploy
   deploy: act="{{act}}" tom_user="{{tom_user}}" tom_pass="{{tom_pass}}" dep_path="{{dep_path}}" build="{{build}}" tom_url="{{tom_url}}"
-  register: temp
+  register: dep
   become: yes
+  when: act == "deploy"
+  notify: deploy_facts
 
-- debug: msg="{{temp}}"
+- name: rollback
+  deploy: act="{{act}}" tom_user="{{tom_user}}" tom_pass="{{tom_pass}}" dep_path="{{dep_path}}" tom_url="{{tom_url}}" stable="{{stable}}"
+  register: roll
+  become: yes
+  when: act == "rollback"
+
+- debug: msg="{{dep}}"

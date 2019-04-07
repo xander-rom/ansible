@@ -1,0 +1,13 @@
+- name: get facts
+  shell: echo "{{dep.msg}}" | awk '{printf $NF}'
+  register: dep
+  listen: deploy_facts
+
+- name: save facts
+  copy: 
+    content: >
+      {
+        "stable_build": "{{ dep.stdout }}",
+      }
+    dest: "/etc/ansible/facts.d/deploy.fact"
+  listen: deploy_facts

@@ -12,7 +12,7 @@
   until: tom_version.stdout != ''
   retries: 5
   delay: 20
-  listen: tom_serv
+  listen: tom_tune
 
 - name: save facts
   copy: 
@@ -21,4 +21,4 @@
         "tomcat": "{{tom_version.stdout }}",
       }
     dest: "/etc/ansible/facts.d/tomcat.fact"
-  listen: tom_serv
+  listen: tom_tune
