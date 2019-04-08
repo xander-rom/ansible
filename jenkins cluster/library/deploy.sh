@@ -13,7 +13,7 @@ function deploy {
 	if [[ $tom_url ]] && [[ $dep_path ]] && [[ $tom_user ]] && [[ $tom_pass ]] && [[ $build ]]
 	then
 		curl -s -IL $tom_url$dep_path > cur_page
-		if [[ -z "tmp/helloworld-ws/target/helloworld-ws.war" ]]; then touch fuck; fi
+		if [[ -z "tmp/helloworld-ws/target/helloworld-ws.war" ]]; then res="No app to deploy"; fi
 		curl -s --upload-file "tmp/helloworld-ws/target/helloworld-ws.war" "http://$tom_user:$tom_pass@$tom_url/manager/text/deploy?path=/$dep_path&tag=$build&update=true" > dep_res
 		if [[ $(cat dep_res) == *FAIL* ]] || [[ $(cat dep_res) == '' ]]
 		then res="Deploy failed with message: $dep_res"
